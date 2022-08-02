@@ -31,7 +31,10 @@ class Config:
             self.__save_install_id(id)
 
             items = {name: dict(section) for (name, section) in self.config.items()}
-            if items == {'DEFAULT': {}, 'api': {'token': id}} or items == {'DEFAULT': {}, 'user': {'token': id}}:
+            if items in [
+                {'DEFAULT': {}, 'api': {'token': id}},
+                {'DEFAULT': {}, 'user': {'token': id}},
+            ]:
                 os.remove(self.config_file_path)
 
         if self.env.get('ASCIINEMA_API_TOKEN'):
@@ -70,9 +73,7 @@ class Config:
 
     @property
     def install_id(self):
-        id = self.env.get('ASCIINEMA_INSTALL_ID') or self.__read_install_id()
-
-        if id:
+        if id := self.env.get('ASCIINEMA_INSTALL_ID') or self.__read_install_id():
             return id
         else:
             raise ConfigError('no install ID found')
@@ -143,18 +144,15 @@ class Config:
         return self.config.get('notifications', 'command', fallback=None)
 
     def __get_key(self, section, name, default=None):
-        key = self.config.get(section, name + '_key', fallback=default)
-
-        if key:
-            if len(key) == 3:
-                upper_key = key.upper()
-
-                if upper_key[0] == 'C' and upper_key[1] == '-':
-                    return bytes([ord(upper_key[2]) - 0x40])
-                else:
-                    raise ConfigError('invalid {name} key definition \'{key}\' - use: {name}_key = C-x (with control key modifier), or {name}_key = x (with no modifier)'.format(name=name, key=key))
-            else:
+        if key := self.config.get(section, f'{name}_key', fallback=default):
+            if len(key) != 3:
                 return key.encode('utf-8')
+            upper_key = key.upper()
+
+            if upper_key[0] == 'C' and upper_key[1] == '-':
+                return bytes([ord(upper_key[2]) - 0x40])
+            else:
+                raise ConfigError('invalid {name} key definition \'{key}\' - use: {name}_key = C-x (with control key modifier), or {name}_key = x (with no modifier)'.format(name=name, key=key))
 
 
 def get_config_home(env=os.environ):

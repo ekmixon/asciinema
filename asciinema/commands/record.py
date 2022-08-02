@@ -55,15 +55,15 @@ class RecordCommand(Command):
                 append = False
 
             elif os.stat(self.filename).st_size > 0 and not append:
-                self.print_error("%s already exists, aborting" % self.filename)
+                self.print_error(f"{self.filename} already exists, aborting")
                 self.print_error("use --overwrite option if you want to overwrite existing recording")
                 self.print_error("use --append option if you want to append to existing recording")
                 return 1
 
         if append:
-            self.print_info("appending to asciicast at %s" % self.filename)
+            self.print_info(f"appending to asciicast at {self.filename}")
         else:
-            self.print_info("recording asciicast to %s" % self.filename)
+            self.print_info(f"recording asciicast to {self.filename}")
 
         if self.command:
             self.print_info("""exit opened program when you're done""")
@@ -94,13 +94,15 @@ class RecordCommand(Command):
 
         if upload:
             if not self.assume_yes:
-                self.print_info("press <enter> to upload to %s, <ctrl-c> to save locally"
-                                % self.api.hostname())
+                self.print_info(
+                    f"press <enter> to upload to {self.api.hostname()}, <ctrl-c> to save locally"
+                )
+
                 try:
                     sys.stdin.readline()
                 except KeyboardInterrupt:
                     self.print("\r", end="")
-                    self.print_info("asciicast saved to %s" % self.filename)
+                    self.print_info(f"asciicast saved to {self.filename}")
                     return 0
 
             try:
